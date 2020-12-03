@@ -7,7 +7,7 @@
 // The PNG specification is at https://www.w3.org/TR/PNG/.
 //
 // This is a temporary fork of the stdlib png package, containing a patch to
-// speed up Gray16 encoding.
+// speed up Gray32 encoding.
 package png
 
 import (
@@ -419,7 +419,7 @@ func (d *decoder) readImagePass(r io.Reader, pass int, allocateOnly bool) (image
 		rgba     *image.RGBA
 		paletted *image.Paletted
 		nrgba    *image.NRGBA
-		gray16   *image.Gray16
+		Gray32   *image.Gray32
 		rgba64   *image.RGBA64
 		nrgba64  *image.NRGBA64
 		img      image.Image
@@ -474,8 +474,8 @@ func (d *decoder) readImagePass(r io.Reader, pass int, allocateOnly bool) (image
 			nrgba64 = image.NewNRGBA64(image.Rect(0, 0, width, height))
 			img = nrgba64
 		} else {
-			gray16 = image.NewGray16(image.Rect(0, 0, width, height))
-			img = gray16
+			Gray32 = image.NewGray32(image.Rect(0, 0, width, height))
+			img = Gray32
 		}
 	case cbGA16:
 		bitsPerPixel = 32
@@ -735,7 +735,7 @@ func (d *decoder) readImagePass(r io.Reader, pass int, allocateOnly bool) (image
 			} else {
 				for x := 0; x < width; x++ {
 					ycol := uint16(cdat[2*x+0])<<8 | uint16(cdat[2*x+1])
-					gray16.SetGray16(x, y, color.Gray16{ycol})
+					Gray32.SetGray32(x, y, color.Gray32{ycol})
 				}
 			}
 		case cbGA16:
@@ -807,8 +807,8 @@ func (d *decoder) mergePassInto(dst image.Image, src image.Image, pass int) {
 		srcPix = src.(*image.Gray).Pix
 		dstPix, stride, rect = target.Pix, target.Stride, target.Rect
 		bytesPerPixel = 1
-	case *image.Gray16:
-		srcPix = src.(*image.Gray16).Pix
+	case *image.Gray32:
+		srcPix = src.(*image.Gray32).Pix
 		dstPix, stride, rect = target.Pix, target.Stride, target.Rect
 		bytesPerPixel = 2
 	case *image.NRGBA:
@@ -1015,7 +1015,7 @@ func DecodeConfig(r io.Reader) (image.Config, error) {
 	case cbTCA8:
 		cm = color.NRGBAModel
 	case cbG16:
-		cm = color.Gray16Model
+		cm = color.Gray32Model
 	case cbGA16:
 		cm = color.NRGBA64Model
 	case cbTC16:

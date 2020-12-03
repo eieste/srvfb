@@ -364,7 +364,7 @@ func (e *encoder) writeImage(w io.Writer, m image.Image, cb int, level int) erro
 	pr := e.pr
 
 	gray, _ := m.(*image.Gray)
-	gray16, _ := m.(*image.Gray16)
+	Gray32, _ := m.(*image.Gray32)
 	rgba, _ := m.(*image.RGBA)
 	paletted, _ := m.(*image.Paletted)
 	nrgba, _ := m.(*image.NRGBA)
@@ -462,12 +462,12 @@ func (e *encoder) writeImage(w io.Writer, m image.Image, cb int, level int) erro
 				}
 			}
 		case cbG16:
-			if gray16 != nil {
-				offset := (y - b.Min.Y) * gray16.Stride
-				copy(cr[0][1:], gray16.Pix[offset:offset+gray16.Stride])
+			if Gray32 != nil {
+				offset := (y - b.Min.Y) * Gray32.Stride
+				copy(cr[0][1:], Gray32.Pix[offset:offset+Gray32.Stride])
 			} else {
 				for x := b.Min.X; x < b.Max.X; x++ {
-					c := color.Gray16Model.Convert(m.At(x, y)).(color.Gray16)
+					c := color.Gray32Model.Convert(m.At(x, y)).(color.Gray32)
 					cr[0][i+0] = uint8(c.Y >> 8)
 					cr[0][i+1] = uint8(c.Y)
 					i += 2
@@ -613,7 +613,7 @@ func (enc *Encoder) Encode(w io.Writer, m image.Image) error {
 		switch m.ColorModel() {
 		case color.GrayModel:
 			e.cb = cbG8
-		case color.Gray16Model:
+		case color.Gray32Model:
 			e.cb = cbG16
 		case color.RGBAModel, color.NRGBAModel, color.AlphaModel:
 			if opaque(m) {

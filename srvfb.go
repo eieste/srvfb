@@ -38,8 +38,8 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/Merovius/srvfb/internal/fb"
-	"github.com/Merovius/srvfb/internal/png"
+	"github.com/eieste/srvfb/internal/fb"
+	"github.com/eieste/srvfb/internal/png"
 
 	"golang.org/x/sys/unix"
 )
@@ -151,7 +151,7 @@ func (h *handler) serveRaw(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	im := new(image.Gray16)
+	im := new(image.Gray32)
 	if err := h.readImage(im); err != nil {
 		log.Println(err)
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
@@ -221,7 +221,7 @@ func (h *handler) serveVideo(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var reader interface {
-		readImage(im *image.Gray16) error
+		readImage(im *image.Gray32) error
 	}
 
 	if h.proxy != "" {
@@ -244,7 +244,7 @@ func (h *handler) serveVideo(w http.ResponseWriter, r *http.Request) {
 	mpw.SetBoundary("endofsection")
 	hdr := make(textproto.MIMEHeader)
 	hdr.Add("Content-Type", "image/png")
-	im := new(image.Gray16)
+	im := new(image.Gray32)
 	enc := &png.Encoder{CompressionLevel: png.BestSpeed}
 	var dedup deduper
 	for {
@@ -268,7 +268,7 @@ func (h *handler) serveVideo(w http.ResponseWriter, r *http.Request) {
 
 func (h *handler) serveImage(w http.ResponseWriter, r *http.Request) {
 	var reader interface {
-		readImage(im *image.Gray16) error
+		readImage(im *image.Gray32) error
 	}
 
 	if h.proxy != "" {
@@ -284,7 +284,7 @@ func (h *handler) serveImage(w http.ResponseWriter, r *http.Request) {
 		reader = h
 	}
 
-	im := new(image.Gray16)
+	im := new(image.Gray32)
 	if err := reader.readImage(im); err != nil {
 		log.Println(err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
@@ -302,12 +302,12 @@ func (h *handler) serveIndex(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, string(file))
 }
 
-func (h *handler) readImage(im *image.Gray16) error {
+func (h *handler) readImage(im *image.Gray32) error {
 	vim, err := h.fb.Image()
 	if err != nil {
 		return err
 	}
-	gim, ok := vim.(*image.Gray16)
+	gim, ok := vim.(*image.Gray32)
 	if !ok {
 		return errors.New("framebuffer is not 16-bit grayscale")
 	}
@@ -383,9 +383,9 @@ func (c *proxyconn) readHdr(resp *http.Response) error {
 	return nil
 }
 
-func (c *proxyconn) readImage(im *image.Gray16) error {
+func (c *proxyconn) readImage(im *image.Gray32) error {
 	if len(im.Pix) != c.stride*c.height {
-		*im = image.Gray16{
+		*im = image.Gray32{
 			Pix:    make([]byte, c.stride*c.height),
 			Stride: c.stride,
 			Rect:   image.Rect(0, 0, c.width, c.height),

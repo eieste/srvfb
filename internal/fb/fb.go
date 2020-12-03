@@ -80,7 +80,7 @@ func (d *Device) Image() (image.Image, error) {
 	if !visual.In(virtual) {
 		return nil, errors.New("visual resolution not contained in virtual resolution")
 	}
-	return &image.Gray16{
+	return &image.Gray32{
 		Pix:    d.mmap,
 		Stride: int(d.finfo.Line_length),
 		Rect:   visual,
